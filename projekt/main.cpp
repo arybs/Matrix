@@ -1,213 +1,114 @@
+#include<stdlib.h>
 #include<stdio.h>
 #include<math.h>
-#include<stdlib.h>
 #include<time.h>
 
-void display(double **X, int H, int W);
-void getdata1(FILE *f, int w, int k);
-void getdata2(FILE *f,double **A, int wa, int ka); 
-void complete(double **A, int wa, int ka);
-void save(double **A, int wa, int ka, FILE*f);
-void add(double **A, double **B, double **C, int ka, int wa, int kb, int wb);
-void substruct(double **A, double **B,double **C, int ka, int wa, int kb, int wb);
-void multiplying(double **A, double **B, double **C, int ka, int wa, int kb, int wb);
+void completeA(double **A, int w, int k);
+void completeM(double **A, int w, int k);
+void display(double **A, int w, int k);
+void save(FILE *f, double **A, int w, int k);
 int main()
 {
-	double **A, **B, **C1, **C2, **D;
-	int i, j;
-	int wa,wb, ka, kb;
-	wa=0;
-	wb=0;
-	ka=0;
-	kb=0;
-	srand ( time (NULL) );
-	FILE *f = fopen("Dane1.txt", "r");
-	FILE *g = fopen("Dane2.txt", "r");
-	FILE *h = fopen("Wynik.txt", "w");
-	fscanf(f, "%d %d", &wa, &ka);
-	fscanf(g, "%d %d", &wb, &kb);
-	A = (double**)malloc(wa*sizeof(double*)); //tworzymy 4 tablice dynamiczne  
-    for(i=0; i<wa; ++i) 
-		A[i] = (double*)malloc(ka*sizeof(double));
-    B = (double**)malloc(wb*sizeof(double*));
-	for(i = 0; i<wb; ++i)
-		B[i] = (double*)malloc(kb*sizeof(double));
-	C1 = (double**)malloc(wa*sizeof(double*));
-    for(i = 0; i<wa; ++i)
-		C1[i] = (double*)malloc(ka*sizeof(double));
-	C2 = (double**)malloc(wa*sizeof(double*));
-    for(i = 0; i<wa; ++i)
-		C2[i] = (double*)malloc(ka*sizeof(double));
-	D= (double**)malloc(wa*sizeof(double*));  // 5-ta tablica stworzona dla mnozenia 
-    for(i=0; i<wa; ++i) 
-		D[i] = (double*)malloc(kb*sizeof(double));
-	//complete(A, wa, ka);
-	getdata2(f, A, wa, ka);
-	display(A, wa, ka);
-	printf("\n \n");
-	//complete(B, wb, kb);
-	getdata2(g, B, wb, kb);
-	display(B, wb, kb);printf("\n \n");
-	add(A, B, C1, ka, wa, kb, wb);
-	printf("\n \n");
-	if( (ka==kb)&&(wa==wb) )
+	FILE*f=fopen("Dane1.txt", "w");
+	FILE*g=fopen("Dane2.txt", "w");
+	double **A;
+	double **B;
+	int w1,k1,w2,k2, i,a, b;
+	srand( time (NULL) );
+	printf("Jakich rozmiarow macierze chcesz uzupelnic \n");
+	scanf("%d%d%d%d", &w1, &k1, &w2, &k2);
+	A = (double**)malloc(w1*sizeof(double*));  
+    for(i=0; i<w1; ++i)
 	{
-		save(C1, wa ,ka ,h);
-		fprintf(h, "\n");
+		A[i] = (double*)malloc(k1*sizeof(double));
 	}
-	substruct(A, B, C2, ka ,wa, kb, wb);
-	printf("\n \n");
-	multiplying(A, B, D, ka, wa, kb,wb);
-	if( (ka==kb)&&(wa==wb) )
+	B = (double**)malloc(w2*sizeof(double*));  
+    for(i=0; i<w2; ++i)
 	{
-		save(C2, wa ,ka ,h);
-		fprintf(h, "\n");
+		B[i] = (double*)malloc(k2*sizeof(double));
 	}
-	if(ka==wb)
+	printf("Jak chcesz uzupelnic macierz 1?\n Jesli chcesz uzupelnic macierz automatycznie kliknij 1, jesli chcesz uzupelnij ja samodzielnie kliknij 2 \n \n UWAGA: \n Macierz automatycznie uzupelnia sie liczbami rzeczyiwstymi od -100 do 100 \n");
+	scanf("%d", &a);
+	if(a==1)
 	{
-	save(D, wa ,kb ,h);
+		completeA(A, w1, k1);
 	}
-	for(i = 0; i<wa; ++i)
+	else if(a==2)
 	{
+		completeM(A, w1, k1);
+	}
+	printf("Jak chcesz uzupelnic macierz 2?\n Jesli chcesz uzupelnic macierz automatycznie kliknij 1, jesli chcesz uzupelnij ja samodzielnie kliknij 2 \n \n UWAGA: \n Macierz automatycznie uzupelnia sie liczbami rzeczyiwstymi od -100 do 100 \n");
+		scanf("%d", &b);
+	if(b==1)
+	{
+		completeA(B, w2, k2);
+	}
+	else if(b==2)
+	{
+		completeM(B, w2, k2);
+	}
+	display(A,w1, k1);
+	printf("\n");
+	display(B, w2, k2);
+	fprintf(f, "%d \t %d \n", w1, k1);
+	fprintf(g, "%d \t %d \n", w2, k2);
+	save(f, A, w1, k1);
+	save(g, B, w2, k2);
+	for(i=0; i<w1; ++i)
 		free(A[i]);
-        free(B[i]);
-		free(C1[i]);
-		free(C2[i]);
-		free(D[i]);
-	}
+	for(i=0; i<w2; ++i)
+		free(B[i]);
 	free(A);
 	free(B);
-	free(C1);
-	free(C2);
-	free(D);
 	fclose(f);
 	fclose(g);
-	fclose(h);
 	system("pause");
 	return 0;
 }
 
-
-void getdata1(FILE*f, int w, int k)
+void completeA(double **A, int w, int k)
 {
-	fscanf(f, "%d %d", &w, &k);
-}
-void getdata2(FILE*f, double **A, int wa, int ka)
-{
-	int i,j;
-	for (i=0; i<wa; ++i)
+	int i, j;
+	for(i=0; i<w; i++)
 	{
-		for(j=0; j<ka; ++j) fscanf(f, "%lf", &A[i][j]);
-	}
-}
-
-void complete(double **A, int wa, int ka)
-{
-	int i,j;
-	for (i=0; i<wa; ++i)
-	{
-		for(j=0; j<ka; ++j)
+		for(j=0; j<k; j++)
 		{
-			A[i][j]=(double)rand()/RAND_MAX*100;
+			A[i][j]=(double)rand()*200/RAND_MAX-100;
 		}
 	}
 }
-void save(double **A, int wa, int ka, FILE *f)
+void completeM(double **A, int w, int k)
 {
 	int i, j;
-	for(i=0; i<wa; ++i)
+	for(i=0; i<w; i++)
 	{
-		for(int j=0; j<ka; ++j)
+		for(j=0; j<k; j++)
 		{
-			fprintf(f, "%lf \t", A[i][j]);
+			scanf("%lf", &A[i][j]);
+		}
+	}
+}
+void display(double **A, int w, int k)
+{
+	int i, j;
+	for(i=0; i<w; i++)
+	{
+		for(j=0; j<k; j++)
+		{
+			printf("%.1lf \t", A[i][j]);
+		}
+		printf("\n");
+	}
+}
+void save(FILE *f, double **A , int w, int k)
+{
+	int i,j;
+	for(i =0; i<w; i++)
+	{
+		for(j=0; j<k; j++)
+		{
+			fprintf(f,"%.2lf \t" ,A[i][j]);
 		}
 		fprintf(f, "\n");
 	}
 }
-
-void display(double **X, int H, int W)
-{
-	int i,j;
-    for(i=0; i<H; ++i){
-        for(j=0; j<W; ++j){
-            printf("%.1lf \t",X[i][j]);
-        }
-        printf("\n");
-    }		
-}
-void add(double **A, double **B, double **C, int ka, int wa, int kb, int wb)
-{
-	int i,j;
-	if( (ka==kb)&&(wa==wb) )
-	{
-		for(i=0; i<wa; i++)
-		{
-			for (j=0; j<ka; j++)
-				C[i][j]=A[i][j]+B[i][j];
-		}
-		display(C,wa , ka);
-	}
-	else 
-	{
-		printf("You cannot add these matrixes\n");
-		for(i=0; i<wa; i++)
-		{
-			for (j=0; j<ka; j++)
-				C[i][j]=0.0;
-		}
-	}
-}
-
-void substruct(double **A, double **B,double **C, int ka, int wa, int kb, int wb)
-{
-	int i,j;
-	if( (ka==kb)&&(wa==wb) )
-	{
-		for(i=0; i<wa; i++)
-		{
-			for (j=0; j<ka; j++)
-				C[i][j]=A[i][j]-B[i][j];
-		}
-	display(C, wa, kb);
-	}
-	else 
-	{
-		printf("You cannot make a substruction of these matrixes\n");
-		for(i=0; i<wa; i++)
-		{
-			for (j=0; j<ka; j++)
-				C[i][j]=0.;
-		}
-	}
-}
-void multiplying(double **A, double **B, double **C, int ka, int wa, int kb, int wb)
-{
-	
-	int i,j,k ;
-	for(i=0; i<wa; i++)
-	{
-			for (j=0; j<kb; j++)
-			{
-				C[i][j]=0.0;
-			}
-	}
-	if( ka==wb )
-	{
-		for(i=0; i<wa; i++)
-		{
-			for (j=0; j<kb; j++)
-			{
-				for(k=0; k<ka; k++)
-				C[i][j]=C[i][j]+A[i][k]*B[k][j];
-			}
-		}
-	display(C, wa, kb);
-	}
-	else 
-	{
-		printf("You cannot multiply these matrixes\n");
-	}
-}
-
-
-
